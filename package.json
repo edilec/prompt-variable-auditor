@@ -1,0 +1,17 @@
+{
+  "name": "prompt-variable-auditor",
+  "version": "0.0.0",
+  "description": "Find undeclared prompt variables, unsafe defaults and unused template fields.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edilec/prompt-variable-auditor"
+  }
+}
