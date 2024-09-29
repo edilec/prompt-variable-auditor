@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "1",
+  "values": {
+    "repository": "edilec/prompt-variable-auditor",
+    "max_findings": 5,
+    "diff": "--- a/src/index.mjs\n+++ b/src/index.mjs\n@@\n-const limit = 10\n+const limit = 20\n"
+  }
+}

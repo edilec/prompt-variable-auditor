@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1",
+  "variables": [
+    { "name": "greeting", "type": "string", "required": true, "context": "text", "description": "Required, and no value is supplied for it." },
+    { "name": "ticket_id", "type": "string", "required": true, "context": "identifier" },
+    { "name": "customer_note", "type": "string", "required": true, "context": "text", "description": "Untrusted text from a stranger, inserted into prose." },
+    { "name": "snippet", "type": "string", "required": true, "context": "code" },
+    { "name": "internal_priority", "type": "string", "context": "text", "default": "normal", "description": "Declared and never interpolated." }
+  ]
+}
