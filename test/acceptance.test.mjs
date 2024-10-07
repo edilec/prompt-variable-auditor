@@ -242,6 +242,18 @@ test('a value supplied for a variable nobody declared is a warning, not a failur
   assert.equal(run.code, 0)
 })
 
+test('a variable that declares no context is refused rather than assumed', async (t) => {
+  const directory = await workspace(t)
+  const { options, args } = await prepare(
+    directory, 'Do {{task}}', [{ name: 'task', type: 'string' }], { task: 'x' },
+  )
+  const report = await auditPromptVariables(options)
+  assert.equal(report.status, 'incomplete', 'a context nobody declared cannot be checked for what breaks out of it')
+  assert.ok(report.findings.some((finding) =>
+    finding.ruleId === 'schema-malformed' && finding.location.pointer === '/variables/task/context'))
+  assert.equal((await runCli(args)).code, 2)
+})
+
 test('a supplied value of the wrong type is refused', async (t) => {
   const directory = await workspace(t)
   const { options } = await prepare(

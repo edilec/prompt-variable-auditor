@@ -110,6 +110,16 @@ test('a variable description is never echoed into the report at all', async (t) 
   )
   const report = await auditPromptVariables(options)
   assert.ok(!JSON.stringify(report).includes(secret))
+  /**
+   * The row shape is pinned as a set, not merely searched for one string. A
+   * field added to a verdict row is how free text nobody meant to publish gets
+   * published, and "the secret I happened to plant is absent" does not notice a
+   * new field carrying somebody else's.
+   */
+  assert.deepEqual(
+    Object.keys(report.variables[0]).sort(),
+    ['context', 'contexts', 'declared', 'name', 'occurrences', 'required', 'source', 'type', 'verdict'],
+  )
 })
 
 test('a long raw placeholder name is bounded rather than reproduced in full', async (t) => {
