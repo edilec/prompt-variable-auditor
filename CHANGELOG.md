@@ -28,5 +28,9 @@ First implementation.
   input, a limit reached, a value too long to scan, a time budget expired, or a
   template and schema that between them name no variable — produces no
   per-variable verdicts at all and exits 2.
+- A document value that cannot be turned into a string — an object carrying a
+  non-callable `toString` — is described by its shape (`[object]`, `[array]`)
+  and the input is reported as uninterpretable. It never aborts the run, and it
+  never suppresses the findings for the other inputs.
 - Renders nothing and writes nothing. There is no output flag.
 - 35 rule ids, listed in [README.md](./README.md).
