@@ -85,11 +85,42 @@ test('the documented vocabularies are the vocabularies the code enforces', () =>
   assert.ok(!TYPES.includes('object') && !TYPES.includes('array'), 'the README says neither is offered')
 })
 
-test('every marker the code matches is listed in the README, and nothing else is promised', () => {
-  for (const marker of TEXT_MARKERS) {
-    const escaped = marker.replaceAll('|', '\\|')
-    assert.ok(readme.includes(escaped), `the README must list the marker ${marker}`)
-  }
+/**
+ * The markers the README's context table promises, parsed out of the row.
+ *
+ * Parsed rather than listed again, because the failure this catches is the two
+ * drifting apart: a marker dropped from the code and still promised, or added to
+ * the code and never documented.
+ */
+function documentedTextMarkers(text) {
+  const row = text.split('\n').find((line) => line.startsWith('| `text` |'))
+  assert.ok(row !== undefined, 'the `text` row of the context table was not found, so this test proves nothing')
+  const cell = row.split(' | ')[1]
+  return cell.split(';')[0].split(', ').map((entry) => entry.trim().replace(/^`|`$/g, '').replaceAll('\\|', '|'))
+}
+
+/**
+ * Both directions, and the second one is the one that was missing.
+ *
+ * Iterating `TEXT_MARKERS` and checking the README mentions each is satisfied
+ * trivially by a SHORTER list: reducing the export to one entry left the whole
+ * suite green while sixteen markers silently stopped being matched. The
+ * behaviour is pinned in `acceptance.test.mjs`, marker by marker, against a
+ * literal list; what this asserts is that the README and the code agree about
+ * which markers exist, each way round.
+ */
+test('every marker the code matches is listed in the README, and every listed marker exists', () => {
+  const documented = documentedTextMarkers(readme)
+  assert.equal(documented.length, 17, 'the README row parsed to an unexpected number of markers')
+  assert.deepEqual(
+    [...TEXT_MARKERS].filter((marker) => !documented.includes(marker)), [],
+    'a marker the code matches that the README does not list',
+  )
+  assert.deepEqual(
+    documented.filter((marker) => !TEXT_MARKERS.includes(marker)), [],
+    'a marker the README promises that the code no longer matches',
+  )
+  assert.deepEqual([...TEXT_MARKERS], documented, 'and in the same order, so the table reads as the code does')
   assert.match(readme, /It does not detect natural-language prompt injection/)
   assert.ok(
     !/detects? (prompt )?injection\b(?! is)/i.test(readme.replaceAll('It does not detect natural-language prompt injection', '')),
