@@ -40,19 +40,33 @@ test('the comparator itself orders by code unit', () => {
 
 test('verdict rows come back in code-unit order of the variable name', async (t) => {
   const directory = await workspace(t)
-  // Declared and interpolated deliberately out of order, so emission order
-  // cannot be what is being observed.
-  const reversed = [...DISAGREEING].reverse()
+  /**
+   * Two of the three are UNDECLARED, and that is what makes this bite.
+   *
+   * `validateSchemaDocument` already sorts the declarations, so a fixture whose
+   * names are all declared comes out in order whatever the report path does with
+   * them: deleting the sort from the union of declared and interpolated names
+   * left 139 of 139 green while a real report came back in insertion order. The
+   * union has an order of its own only when the template contributes names the
+   * schema does not.
+   *
+   * Here the names are first seen as a_two (declared), then Zebra and aXone
+   * (interpolated) -- an order that is neither code unit nor collation, so all
+   * three orderings are distinguishable and each is asserted below.
+   */
   const { options } = await prepare(
     directory,
-    reversed.map((name) => `{{${name}}}`).join(' '),
-    reversed.map((name) => variable({ name, required: true })),
+    '{{Zebra}} {{aXone}} {{a_two}}',
+    [variable({ name: 'a_two', required: true })],
     {},
   )
   const report = await auditPromptVariables(options)
-  assert.deepEqual(report.variables.map((entry) => entry.name), ['Zebra', 'aXone', 'a_two'])
+  const emitted = report.variables.map((entry) => entry.name)
+
+  assert.deepEqual(emitted, ['Zebra', 'aXone', 'a_two'])
+  assert.notDeepEqual(emitted, ['a_two', 'Zebra', 'aXone'], 'that is the order the names were first seen in')
   assert.notDeepEqual(
-    report.variables.map((entry) => entry.name),
+    emitted,
     [...DISAGREEING].sort((left, right) => left.localeCompare(right)),
     'collation would emit a_two, aXone, Zebra; this report must not',
   )
