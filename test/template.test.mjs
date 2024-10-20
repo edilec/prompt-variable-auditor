@@ -88,6 +88,33 @@ test('tildes fence too, and a fence of one kind does not close the other', () =>
   assert.equal(contextAt(text.indexOf('out'), ranges), 'text')
 })
 
+test('a fence is a fence at up to three spaces of indent, and not at four', () => {
+  /**
+   * The bound is CommonMark's, and it is not decoration: it decides whether a
+   * placeholder below the line is `code` or `text`, and therefore which set of
+   * structural markers its value is checked against. Widening `[ \t]{0,3}` to
+   * `[ \t]*` left 139 of 139 green, so nothing held it.
+   */
+  for (const indent of ['', ' ', '  ', '   ', '\t']) {
+    const text = `before\n${indent}\`\`\`\ninside\n${indent}\`\`\`\nafter\n`
+    const ranges = fencedRanges(text)
+    assert.equal(ranges.length, 1, `an indent of ${JSON.stringify(indent)} must open and close a fence`)
+    assert.equal(contextAt(text.indexOf('inside'), ranges), 'code')
+    assert.equal(contextAt(text.indexOf('after'), ranges), 'text')
+  }
+
+  const overIndented = 'before\n    ```\nnot inside\n    ```\nafter\n'
+  assert.deepEqual(fencedRanges(overIndented), [], 'four spaces opens no block')
+  assert.equal(contextAt(overIndented.indexOf('not inside'), fencedRanges(overIndented)), 'text')
+
+  // And a closing run indented past the bound does not close the block either,
+  // which is why an unterminated fence is the documented outcome here.
+  const unclosed = 'before\n```\ninside\n    ```\nstill inside\n'
+  const ranges = fencedRanges(unclosed)
+  assert.equal(ranges.length, 1)
+  assert.equal(contextAt(unclosed.indexOf('still inside'), ranges), 'code')
+})
+
 test('an unterminated fence runs to the end of the template', () => {
   const text = 'before\n```\nfrom here on\n'
   const ranges = fencedRanges(text)

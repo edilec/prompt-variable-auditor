@@ -145,6 +145,14 @@ test('the README quick start is a command that actually runs', async () => {
   }
 })
 
+test('the README states the fence indent bound the scanner enforces', () => {
+  // The bound decides whether a placeholder is `code` or `text`, and so which
+  // markers its value is checked against. A README that left it to the reader
+  // would be under-documenting a security-relevant classification.
+  assert.match(readme, /indented by at most three spaces or tabs/)
+  assert.match(readme, /a run indented by four or more opens no block/)
+})
+
 test('the grammar table in the README matches what the scanner does', async () => {
   for (const row of ['`{{name}}`', '`\\{{name}}`', '`\\\\{{name}}`', '`{{ {{name}} }}`', '`{{name`', '`}}`']) {
     assert.ok(readme.includes(row), `the grammar table must state ${row}`)

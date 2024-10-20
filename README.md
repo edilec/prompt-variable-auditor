@@ -125,7 +125,7 @@ template did not open.
 | Context | Refuses |
 | --- | --- |
 | `text` | `<\|endoftext\|>`, `<\|im_end\|>`, `<\|im_start\|>`, `<</SYS>>`, `<<SYS>>`, `[/INST]`, `[INST]`, `</documents>`, `</function_calls>`, `</instructions>`, `</system>`, `</tool_result>`, `<documents>`, `<function_calls>`, `<instructions>`, `<system>`, `<tool_result>`; plus a conversational turn header (`Human:`, `Assistant:`, `System:`, `User:`) at the start of a line |
-| `code` | A fence run of three or more backticks or tildes at the start of a line, which would close the block early |
+| `code` | A fence run of three or more backticks or tildes at the start of a line, indented by at most three spaces or tabs, which would close the block early |
 | `json-string` | A quote, a backslash, or a character below U+0020 — each of which ends the string literal early or is invalid inside one |
 | `identifier` | Anything outside `[A-Za-z0-9_-]` |
 
@@ -134,6 +134,11 @@ inside a fenced block it is `code`, otherwise `text`. A declaration that disagre
 with every occurrence is `context-mismatch`, and a variable interpolated in both
 is `context-conflict` — one escaping cannot be correct for both, so whichever is
 declared, one of the sites is wrong.
+
+A fence line is three or more backticks or tildes indented by **at most three**
+spaces or tabs, as in CommonMark; a run indented by four or more opens no block,
+so a placeholder below it stays `text`. The bound decides which marker set a
+value is checked against, so it is stated rather than left to the reader.
 
 `json-string` and `identifier` are **not** inferred. A text template gives nothing
 to infer them from, so a declaration of either is taken at its word.
