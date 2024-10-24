@@ -11,7 +11,9 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import { assertReportInvariants, auditPromptVariables } from '../src/index.mjs'
-import { prepare, runCli, variable, workspace, writeFixture } from './helpers.mjs'
+import {
+  importSourceWithSubstitution, prepare, runCli, variable, workspace, writeFixture,
+} from './helpers.mjs'
 
 /** A monotonic clock that reads `0` for a while and then jumps past any budget. */
 function clockThatJumpsAfter(readings) {
@@ -104,9 +106,9 @@ test('every unreadable input is named, so a consumer knows which one to fix', as
  * thing between an empty audit and a green exit 0. That makes it exactly the
  * kind of invariant that is true by accident until somebody deletes one line.
  */
-test('a template and schema that name no variable cannot exit 0', async (t) => {
+test('a template and schema that name no variable cannot exit 0, and such a report cannot be built', async (t) => {
   const directory = await workspace(t)
-  const { args } = await prepare(directory, 'A prompt with no placeholders at all.', [], {})
+  const { args, options } = await prepare(directory, 'A prompt with no placeholders at all.', [], {})
   const run = await runCli([...args, '--json'])
   assert.equal(run.code, 2)
   const report = JSON.parse(run.stdout)
@@ -118,6 +120,29 @@ test('a template and schema that name no variable cannot exit 0', async (t) => {
     assertReportInvariants({ ...report, status: 'pass' }),
     ['a pass was produced with nothing checked'],
     'the production invariant, not just this test, refuses a pass over no evidence',
+  )
+
+  /**
+   * The enforcement, not the list.
+   *
+   * Everything above shows that `assertReportInvariants` can name the violation
+   * when it is handed one. It does not show that `finish` refuses to RETURN
+   * such a report, because no input reaches that state while the guard above is
+   * in place -- so the enforcement line survived being replaced by
+   * `void violations` with all of this green. Removing the guard from a copy of
+   * the source makes the violating report reachable, and the copy must refuse
+   * to build it.
+   */
+  const withoutTheEmptyAuditGuard = await importSourceWithSubstitution(t, {
+    file: 'index.mjs',
+    find: '  if (names.length === 0) {',
+    replace: '  if (false) {',
+  })
+  assert.equal((await auditPromptVariables(options)).status, 'incomplete', 'the shipped guard still holds')
+  await assert.rejects(
+    () => withoutTheEmptyAuditGuard.auditPromptVariables(options),
+    /Report invariant violated: a pass was produced with nothing checked/,
+    'with that guard gone the builder would have returned status pass over checked 0; it has to throw instead',
   )
 })
 
