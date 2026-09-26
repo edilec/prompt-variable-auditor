@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1",
+  "variables": [
+    { "name": "repository", "type": "string", "required": true, "context": "text", "description": "Repository the change belongs to." },
+    { "name": "focus", "type": "string", "context": "text", "default": "correctness", "description": "What the reviewer should weigh most." },
+    { "name": "max_findings", "type": "number", "required": true, "context": "text" },
+    { "name": "diff", "type": "string", "required": true, "context": "code", "description": "Interpolated inside a fenced block, so it is checked for a fence run that would close it." }
+  ]
+}

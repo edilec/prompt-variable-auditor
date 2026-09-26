@@ -1,0 +1,53 @@
+{
+  "name": "prompt-variable-auditor",
+  "version": "0.1.0",
+  "description": "Audit a prompt template against its variable schema and a value set -- undeclared placeholders, unused declarations, required variables with no value, and values that would break out of the context they are interpolated into. Renders nothing.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "node --check bin/prompt-variable-auditor.mjs && node --check src/index.mjs && node --check src/schema.mjs && node --check src/template.mjs && node --check src/text.mjs && node --check test/acceptance.test.mjs && node --check test/cli.test.mjs && node --check test/determinism.test.mjs && node --check test/helpers.mjs && node --check test/incomplete.test.mjs && node --check test/no-rendering.test.mjs && node --check test/ordering.test.mjs && node --check test/parse-failure.test.mjs && node --check test/rule-catalog.test.mjs && node --check test/sanitisation.test.mjs && node --check test/severity-outcomes.test.mjs && node --check test/template.test.mjs",
+    "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=src/**",
+    "example": "node bin/prompt-variable-auditor.mjs --template examples/clean/template.md --schema examples/clean/variables.json --values examples/clean/values.json",
+    "example:failing": "node bin/prompt-variable-auditor.mjs --template examples/unsafe/template.md --schema examples/unsafe/variables.json --values examples/unsafe/values.json; test $? -eq 1",
+    "pack:check": "npm pack --dry-run",
+    "check": "npm run lint && npm test && npm run example && npm run example:failing && npm run pack:check"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edilec/prompt-variable-auditor.git"
+  },
+  "bin": {
+    "prompt-variable-auditor": "./bin/prompt-variable-auditor.mjs"
+  },
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "examples",
+    "docs",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "prompt",
+    "template",
+    "variables",
+    "interpolation",
+    "prompt-injection",
+    "static-analysis",
+    "llm",
+    "cli"
+  ],
+  "author": "Edilec Private Limited",
+  "bugs": {
+    "url": "https://github.com/edilec/prompt-variable-auditor/issues"
+  },
+  "homepage": "https://github.com/edilec/prompt-variable-auditor#readme"
+}
